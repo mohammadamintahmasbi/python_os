@@ -24,9 +24,8 @@ def handel_request(conn, addr):
             msg = conn.recv(msg_len).decode(FORMAT)
             if msg == DISCONNECT_MESSAGE:
                 connected = False
-                
-            print(f"[{addr}] {msg}")
 
+            print(f"[{addr}] {msg}")
     conn.close()
 
 def start():
