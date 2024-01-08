@@ -21,5 +21,10 @@ def send(msg):
     client.send(message)
 
 
-send("Hello")
+send("1.txt")
+send("2.txt")
+send("3.txt")
+send("4.txt")
+send("5.txt")
+
 send(DISCONNECT_MESSAGE)
