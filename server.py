@@ -18,9 +18,15 @@ Addresses = []
 processes = []
 
 def create_workers(addresses: [str]):
-    process_0 = multiprocessing.Process(target=hash_to_md5, args=[addresses])
-
-    process_0.start()
+    finish = False
+    i = 0
+    while not finish:
+        process_0 = multiprocessing.Process(target=hash_to_md5, args=[addresses[i:i+5]])
+        process_0.start()
+        processes.append(process_0)
+        i+=5
+        if i == len(addresses):
+            finish = True
 
 
 def handel_request(conn, addr):
@@ -33,13 +39,14 @@ def handel_request(conn, addr):
             msg = conn.recv(msg_len).decode(FORMAT)
             if msg == DISCONNECT_MESSAGE:
                 connected = False
+                break
 
             print(f"[{addr}] {msg}")
             
             if len(Addresses) >= 5:
                 print("[ERROR] You have illegal number of address")
-                connected = False
-                break
+                # connected = False
+                # break
 
             Addresses.append(msg)
     print(Addresses[0])
