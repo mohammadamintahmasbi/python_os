@@ -52,5 +52,5 @@ for i in range(5):
     t = threading.Thread(target=send, args=(q,))
     t.start()
 
-q.put(DISCONNECT_MESSAGE)
+# q.put(DISCONNECT_MESSAGE)
 q.join()

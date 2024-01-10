@@ -1,7 +1,7 @@
 import os
 import socket
 import threading
-
+from queue import Queue
 
 HEADER = 128
 PORT = 5050
@@ -15,40 +15,42 @@ client.connect(ADDR)
 lock = threading.Lock()
 
 files = []
+f = []
 
 def get_addresses():
     directory = "files"
-
     files_and_dirs = os.listdir(directory)
-
-    print("path:" + str(os.listdir(directory)))
-    
-    
     files = [f for f in files_and_dirs if os.path.isfile(os.path.join(directory, f))]
-   
+    
     for file in files:
-        print(os.path.join(directory, file))
-        print(len(files))
+        f.append(os.path.join(directory, file))
+    
+    return f
 
+def send(q):
+    while True:
+        file = q.get()
+        if file == DISCONNECT_MESSAGE:
+            break
+        with lock:
+            message = file.encode(FORMAT)
+            msg_len = len(file)
+            send_len = str(msg_len).encode(FORMAT)
+            send_len += b' '* (HEADER - len(send_len))
+            client.send(send_len)
+            client.send(message)
+            print(message)
+        q.task_done()
 
-def send(msg):
-    with lock:
-        message = msg.encode(FORMAT)
-        msg_len = len(msg)
-        send_len = str(msg_len).encode(FORMAT)
-        send_len += b' '* (HEADER - len(send_len))
+q = Queue()
 
-        client.send(send_len)
-        client.send(message)
-        
-def threading_send(file):
-    thread = threading.Thread(target=send, args=[file])
-    thread.start()
-
-
-file_finder = threading.Thread(target=get_addresses)
-
+files = get_addresses()
 for file in files:
-    threading_send(file)
+    q.put(file)
 
-threading_send(DISCONNECT_MESSAGE)
+for i in range(5):
+    t = threading.Thread(target=send, args=(q,))
+    t.start()
+
+# q.put(DISCONNECT_MESSAGE)
+q.join()

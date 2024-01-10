@@ -30,7 +30,7 @@ def create_workers(addresses: [str]):
             finish = True
 
 
-def handel_request(conn, addr):
+def handel_request(conn, addr, event):
     print(f"[CONNECTION] {addr} connected!")
     connected = True
     while(connected):
@@ -43,20 +43,22 @@ def handel_request(conn, addr):
                 break
 
             print(f"[{addr}] {msg}")
-            
-            if len(Addresses) >= 5:
-                print("[ERROR] You have illegal number of address")
-                connected = False
-                # break
+
             print(msg)
             Addresses.append(msg)
+            
+            if len(Addresses) >= 5:
+                create_workers(Addresses)        
+                print("[ERROR] You have illegal number of address")
+                Addresses.clear()
+            
+    
     # print(Addresses[0])
-    create_workers(Addresses)
     for p in processes:
         print("Reach to this part")
         p.join()
-
-    # conn.close()
+    event.set()
+    conn.close()
 
 
 def start():
@@ -65,9 +67,11 @@ def start():
     # print(SERVER)
     while True:
         conn, addr = server.accept()
-        theard = threading.Thread(target=handel_request, args=(conn, addr))
+        event = threading.Event()
+        theard = threading.Thread(target=handel_request, args=(conn, addr, event))
         theard.start()
         print("[ACTIVE CONNECTION]")
+        event.wait()
 
 
 
