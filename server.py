@@ -17,6 +17,7 @@ server.bind(ADDR)
 Addresses = []
 processes = []
 
+# multiprocessing.set_start_method('spawn')
 def create_workers(addresses: [str]):
     finish = False
     i = 0
@@ -45,17 +46,17 @@ def handel_request(conn, addr):
             
             if len(Addresses) >= 5:
                 print("[ERROR] You have illegal number of address")
-                # connected = False
+                connected = False
                 # break
-
+            print(msg)
             Addresses.append(msg)
-    print(Addresses[0])
+    # print(Addresses[0])
     create_workers(Addresses)
     for p in processes:
         print("Reach to this part")
         p.join()
 
-    conn.close()
+    # conn.close()
 
 
 def start():
